@@ -1,0 +1,60 @@
+001 musev2_9411	035   $a(OCoLC)437204645
+	$6 520-00/(Q - Does field 520 exist? true
+
+001 musev2_15926	035   $a(OCoLC)76884927
+	$6 505-00/(Q - Does field 505 exist? true
+
+001 musev2_23949	035   $a(OCoLC)867741098
+	$6 246-00/Hani - Does field 246 exist? false
+
+001 musev2_23954	035   $a(OCoLC)867740984
+	$6 246-00/$1 - Does field 246 exist? false
+
+001 musev2_27565	035   $a(OCoLC)869303945
+	$6 246-00/$1 - Does field 246 exist? false
+
+001 musev2_27709	035   $a(OCoLC)870684347
+	$6 246-00/$1 - Does field 246 exist? false
+
+001 musev2_28730	035   $a(OCoLC)871258531
+	$6 505-00/(Q - Does field 505 exist? true
+
+001 musev2_36138	035   $a(OCoLC)894227653
+	$6 245-01/(Q - Does field 245 exist? true
+
+001 musev2_42601	035   $a(OCoLC)894227715
+	$6 520-01/(Q - Does field 520 exist? true
+
+001 musev2_43619	035   $a(OCoLC)930760519
+	$6 505-00/(Q - Does field 505 exist? true
+
+001 musev2_43593	035   $a(OCoLC)857069280
+	$6 520-01/(Q - Does field 520 exist? true
+
+001 musev2_48436	035   $a(OCoLC)945376940
+	$6 505-00/(Q - Does field 505 exist? true
+	$6 505-00/(Q - Does field 505 exist? true
+
+001 musev2_49328	035   $a(OCoLC)965831618
+	$6 245-01/(Q - Does field 245 exist? true
+
+001 musev2_51550	035   $a(OCoLC)903283161
+	$6 700-00/(Q - Does field 700 exist? true
+	$6 505-02/(N - Does field 505 exist? true
+	$6 245-01/(N - Does field 245 exist? true
+
+001 musev2_55730	035   $a(OCoLC)1014397980
+	$6 520-01/(Q - Does field 520 exist? true
+
+001 musev2_59028	035   $a(OCoLC)1035947418
+	$6 600-03/(Q - Does field 600 exist? true
+	$6 520-02/(Q - Does field 520 exist? true
+	$6 505-00/(Q - Does field 505 exist? true
+	$6 240-01/(Q - Does field 240 exist? true
+
+001 musev2_58021	035   $a(OCoLC)1057696840
+	$6 505-00/(Q - Does field 505 exist? true
+
+001 musev2_58461	035   $a(OCoLC)1057688720
+	$6 505-01/(Q - Does field 505 exist? true
+
