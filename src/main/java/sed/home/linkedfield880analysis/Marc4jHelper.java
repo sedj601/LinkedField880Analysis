@@ -248,4 +248,9 @@ public class Marc4jHelper {
         
         return dataField035.getSubfield('a') != null;
     }
+    
+    static public boolean findLinkedFieldSubfield6(Record record)
+    {
+        //List<DataField> dataFields773 = cloneBib.getVariableFields("773").stream().map(t -> (DataField) t).collect(Collectors.toList());
+    }
 }

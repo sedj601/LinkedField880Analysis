@@ -20,6 +20,7 @@ import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
+import org.marc4j.marc.VariableField;
 
 /**
  *
@@ -57,18 +58,27 @@ public class LinkedField880Analysis {
                     List<DataField> dataFields880 = Marc4jHelper.getDataFields("880", record);
                     if(!dataFields880.isEmpty())
                     {
-                       // System.out.println("001 " + controlField001.getData() + "\t" + (!dataFields035.isEmpty() ? dataFields035.get(0).toString() : ""));
+                        System.out.println("001 " + controlField001.getData() + "\t" + (!dataFields035.isEmpty() ? dataFields035.get(0).toString() : ""));
                         stringBuilder.append("001 ").append(controlField001.getData()).append("\t").append(!dataFields035.isEmpty() ? dataFields035.get(0).toString() : "").append(System.lineSeparator());
                     
 
                         dataFields880.forEach((dataField880) -> {
                             List<Subfield> subfields6 = dataField880.getSubfields('6');
-                            subfields6.forEach(subfield6 ->{                        
-                                String searchForField =  subfield6.getData().substring(0, 3);
-                                //System.out.println("\t$6 " + subfield6.getData() + " - Does field " + searchForField + " exist? " + !record.getVariableFields(searchForField).isEmpty());
-                                stringBuilder.append("\t$6 ").append(subfield6.getData()).append(" - Does field ").append(searchForField).append(" exist? ").append(!record.getVariableFields(searchForField).isEmpty()).append(System.lineSeparator());
+                            subfields6.forEach(subfield6 ->{       
+                                String linkingTag = subfield6.getData().split("-")[0];
+                                String occurrenceNumber = subfield6.getData().split("-")[1].substring(0, 2);
+                                System.out.println("\t880$6: " + subfield6.getData());
+                                System.out.println("\tlinkingTag: " + linkingTag);
+                                System.out.println("\toccurrence numbe: " + occurrenceNumber);
+                                boolean linkingTagExist = !record.getVariableFields(linkingTag).isEmpty();
+                                System.out.println("\t" + linkingTag + " exist: " + linkingTagExist);
+                                System.out.println("");
+//                                List<VariableField> tempVariableFields = record.getVariableFields(searchForField);
+////                                tempVariableFields.forEach(System.out::println);
+//                                System.out.print("\t880 $6 " + subfield6.getData() + "\tfield " + searchForField + " exist: " + searchForField);
+//                                System.out.println();
+//                                stringBuilder.append("\t$6 ").append(subfield6.getData()).append(" - Does field ").append(searchForField).append(" exist? ").append(!record.getVariableFields(searchForField).isEmpty()).append(System.lineSeparator());
                             });   
-
                         });
                         stringBuilder.append(System.lineSeparator());
                         //System.out.println();
