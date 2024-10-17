@@ -17,6 +17,6 @@ Go to https://github.com/sedj601/LinkedField880Analysis/blob/main/distro.zip and
 
 ![download.zip](images/distrodownload.png)
 
-##Note:
+## Note:
 This app uses MARC4J v 2.9.5. It has Vulnerabilities from dependencies. Let your IT person review the app and make a decision.
 MAR4J info: https://mvnrepository.com/artifact/org.marc4j/marc4j/2.9.5
