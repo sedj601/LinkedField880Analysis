@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcStreamReader;
 import org.marc4j.MarcStreamWriter;
@@ -249,8 +250,23 @@ public class Marc4jHelper {
         return dataField035.getSubfield('a') != null;
     }
     
-    static public boolean findLinkedFieldSubfield6(Record record)
+    static public String findLinkedFieldSubfield6(Record record, String fieldTag, String linkingTag, String occurrenceNumber)
     {
-        //List<DataField> dataFields773 = cloneBib.getVariableFields("773").stream().map(t -> (DataField) t).collect(Collectors.toList());
+        List<DataField> dataFieldList = record.getVariableFields(linkingTag).stream().map(t -> (DataField) t).collect(Collectors.toList());
+        
+        for(DataField dataField : dataFieldList)
+        {
+            for(Subfield subfield6 : dataField.getSubfields('6'))
+            {
+                String linkingTagLinkedField = subfield6.getData().split("-")[0];
+                String occurrenceNumberLinkedField = subfield6.getData().split("-")[1].substring(0, 2);
+                if(linkingTagLinkedField.equals(fieldTag) && occurrenceNumberLinkedField.equals(occurrenceNumber))
+                {
+                    return subfield6.getData();
+                }
+            }
+        }
+        
+        return "";
     }
 }

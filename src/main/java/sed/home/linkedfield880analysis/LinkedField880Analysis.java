@@ -12,15 +12,18 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
-import org.marc4j.marc.VariableField;
 
 /**
  *
@@ -30,7 +33,6 @@ public class LinkedField880Analysis {
 
     public static void main(String[] args) throws IOException {
         Path currentRelativePath = Paths.get(".");
-        String s = currentRelativePath.toRealPath().toString();
         //System.out.println("Current absolute path is: " + s);        
         
         File[] files = currentRelativePath.toFile().listFiles((dir, name) -> {return name.toLowerCase().endsWith(".mrc") || name.toLowerCase().endsWith(".marc");});    
@@ -44,7 +46,8 @@ public class LinkedField880Analysis {
         {
             System.out.println("Processing: " + currentFile.getCanonicalPath());
             
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilderGoodLink = new StringBuilder();
+            StringBuilder stringBuilderBadLink = new StringBuilder();
             
             try(InputStream inputStream = new FileInputStream(currentFile))
             {
@@ -52,48 +55,86 @@ public class LinkedField880Analysis {
                 while(marcReader.hasNext())
                 {
                     org.marc4j.marc.Record record = marcReader.next();
-                    ControlField controlField001 = (ControlField)record.getVariableField("001");
-                    List<DataField> dataFields035 = Marc4jHelper.getDataFields("035", record);
-
-                    List<DataField> dataFields880 = Marc4jHelper.getDataFields("880", record);
-                    if(!dataFields880.isEmpty())
-                    {
-                        System.out.println("001 " + controlField001.getData() + "\t" + (!dataFields035.isEmpty() ? dataFields035.get(0).toString() : ""));
-                        stringBuilder.append("001 ").append(controlField001.getData()).append("\t").append(!dataFields035.isEmpty() ? dataFields035.get(0).toString() : "").append(System.lineSeparator());
-                    
-
-                        dataFields880.forEach((dataField880) -> {
-                            List<Subfield> subfields6 = dataField880.getSubfields('6');
-                            subfields6.forEach(subfield6 ->{       
-                                String linkingTag = subfield6.getData().split("-")[0];
-                                String occurrenceNumber = subfield6.getData().split("-")[1].substring(0, 2);
-                                System.out.println("\t880$6: " + subfield6.getData());
-                                System.out.println("\tlinkingTag: " + linkingTag);
-                                System.out.println("\toccurrence numbe: " + occurrenceNumber);
-                                boolean linkingTagExist = !record.getVariableFields(linkingTag).isEmpty();
-                                System.out.println("\t" + linkingTag + " exist: " + linkingTagExist);
-                                System.out.println("");
-//                                List<VariableField> tempVariableFields = record.getVariableFields(searchForField);
-////                                tempVariableFields.forEach(System.out::println);
-//                                System.out.print("\t880 $6 " + subfield6.getData() + "\tfield " + searchForField + " exist: " + searchForField);
-//                                System.out.println();
-//                                stringBuilder.append("\t$6 ").append(subfield6.getData()).append(" - Does field ").append(searchForField).append(" exist? ").append(!record.getVariableFields(searchForField).isEmpty()).append(System.lineSeparator());
-                            });   
-                        });
-                        stringBuilder.append(System.lineSeparator());
-                        //System.out.println();
-                    }
+                    Map.Entry<String, String> returnStrings = handleLinkingFields(record);
+                    stringBuilderGoodLink.append(returnStrings.getKey());
+                    stringBuilderBadLink.append(returnStrings.getValue());
                 }
                 
-                String outputFile = currentFile.getCanonicalPath().replace(".mrc", ".txt").replace(".marc", ".txt");
-                System.out.println("Output Text File: " + outputFile);
-                System.out.println();
-                Files.write(new File(outputFile).toPath(), stringBuilder.toString().getBytes());
+                print(currentFile, stringBuilderGoodLink, stringBuilderBadLink);
             }
             catch (FileNotFoundException ex) 
             {
                 Logger.getLogger(LinkedField880Analysis.class.getName()).log(Level.SEVERE, null, ex);
             }  
+        }
+    }
+    
+    public static Map.Entry<String, String> handleLinkingFields(org.marc4j.marc.Record record)
+    {        
+        StringBuilder stringBuilderGoodLink = new StringBuilder();
+        StringBuilder stringBuilderBadLink = new StringBuilder();
+        
+        for(DataField dataField : record.getDataFields())
+        {
+            if(!dataField.getSubfields('6').isEmpty())
+            {
+                ControlField controlField001 = (ControlField)record.getVariableField("001");
+                List<DataField> dataFields035 = Marc4jHelper.getDataFields("035", record);
+        
+                for(Subfield subfield6 : dataField.getSubfields('6'))
+                {                    
+                    String linkingTag = subfield6.getData().split("-")[0];
+                    String occurrenceNumber = subfield6.getData().split("-")[1].substring(0, 2);                
+                    
+                    boolean linkingTagExist = !record.getVariableFields(linkingTag).isEmpty();
+                    if(linkingTagExist)
+                    {
+                        if(!Marc4jHelper.findLinkedFieldSubfield6(record, dataField.getTag(), linkingTag, occurrenceNumber).isBlank())
+                        {
+                            stringBuilderGoodLink.append("001 ").append(controlField001.getData()).append("\t").append(!dataFields035.isEmpty() ? dataFields035.get(0).toString() : "");
+                            stringBuilderGoodLink.append("\t").append(dataField.getTag()).append("$6 ").append(subfield6.getData()).append(" ");
+                            stringBuilderGoodLink.append("\t").append(linkingTag).append("$6 ").append(Marc4jHelper.findLinkedFieldSubfield6(record, dataField.getTag(), linkingTag, occurrenceNumber));
+                            stringBuilderGoodLink.append(System.lineSeparator()); 
+                        }
+                        else
+                        {
+                            stringBuilderBadLink.append("001 ").append(controlField001.getData()).append("\t").append(!dataFields035.isEmpty() ? dataFields035.get(0).toString() : "");
+                            stringBuilderBadLink.append("\t").append(dataField.getTag()).append("$6 ").append(subfield6.getData()).append(" ");
+                            stringBuilderBadLink.append("COULD NOT FIND $6 LINK SUBFIELD!");
+                            stringBuilderBadLink.append(System.lineSeparator()); 
+                        }                    
+                    }
+                    else
+                    {
+                        stringBuilderBadLink.append("001 ").append(controlField001.getData()).append("\t").append(!dataFields035.isEmpty() ? dataFields035.get(0).toString() : "");
+                        stringBuilderBadLink.append("\t").append(dataField.getTag()).append("$6 ").append(subfield6.getData()).append(" ");
+                        stringBuilderBadLink.append("\tCOULD NOT FIND LINKING TAG FIELD ").append(linkingTag).append("!");
+                        stringBuilderBadLink.append(System.lineSeparator()); 
+                    }                     
+                }
+            }
+        }
+        
+        return new AbstractMap.SimpleEntry<>(stringBuilderGoodLink.toString(), stringBuilderBadLink.toString());
+    }   
+    
+    public static void print(File currentFile, StringBuilder stringBuilderGoodLink, StringBuilder stringBuilderBadLink)
+    {
+        try 
+        {
+            String outputFileGood = currentFile.getCanonicalPath().replace(".mrc", "_good.txt").replace(".marc", "_good.txt");
+            System.out.println("Output Text File: " + outputFileGood);
+            System.out.println();
+            Files.write(new File(outputFileGood).toPath(), stringBuilderGoodLink.toString().getBytes());
+            
+            String outputFileBad = currentFile.getCanonicalPath().replace(".mrc", "_bad.txt").replace(".marc", "_bad.txt");
+            System.out.println("Output Text File: " + outputFileBad);
+            System.out.println();
+            Files.write(new File(outputFileBad).toPath(), stringBuilderBadLink.toString().getBytes());
+        } 
+        catch (IOException ex) 
+        {
+            Logger.getLogger(LinkedField880Analysis.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
